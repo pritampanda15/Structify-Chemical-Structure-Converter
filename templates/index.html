@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structify: Chemical Structure Converter</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #28a8ed;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        /* Main container styles */
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 40px; /* Adds spacing between sections */
+        }
+
+        /* Form container */
+        section#file-converter {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #03a683;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Viewer container */
+        section#structure-viewer {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #viewer {
+            width: 100%;
+            height: 400px;
+            margin: 0 auto; /* Center the viewer */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f4f4f9;
+            position: relative; /* Ensures no overflow */
+            overflow: hidden; /* Ensures rendering stays inside */
+        }
+    </style>
+    <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Structify: Chemical Structure Converter for Molecular Docking</h1>
+    </header>
+
+    <!-- Main container -->
+    <main>
+        <!-- File Converter Form -->
+        <section id="file-converter">
+            <form action="/" method="post" enctype="multipart/form-data" id="upload-form">
+                <label for="file">Upload File:</label>
+                <input type="file" name="file" id="file" required>
+                <label for="conversion_type">Conversion Type:</label>
+                <select name="conversion_type" id="conversion_type">
+                    <option value="sdf_to_mol2">SDF to MOL2</option>
+                    <option value="sdf_to_pdbqt">SDF to PDBQT</option>
+                    <option value="mol2_to_pdbqt">MOL2 to PDBQT</option>
+                    <option value="pdb_to_pdbqt">PDB to PDBQT</option>
+                </select>
+                <button type="submit">Convert</button>
+            </form>
+        </section>
+
+        <!-- Chemical Structure Viewer -->
+        <section id="structure-viewer">
+            <h2>Chemical Structure Viewer</h2>
+            <div id="viewer"></div>
+        </section>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('file');
+        const viewerContainer = document.getElementById('viewer');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = e.target.result;
+                    const viewer = $3Dmol.createViewer(viewerContainer, { backgroundColor: '#f4f4f9' });
+
+                    // Clear previous content
+                    viewer.clear();
+
+                    // Render based on file extension
+                    if (fileExtension === 'sdf') {
+                        viewer.addModel(data, 'sdf');
+                    } else if (fileExtension === 'mol2') {
+                        viewer.addModel(data, 'mol2');
+                    } else if (fileExtension === 'pdb') {
+                        viewer.addModel(data, 'pdb');
+                    } else {
+                        alert('Unsupported file format for visualization. Only SDF and MOL2 are supported.');
+                        return;
+                    }
+
+                    // Configure and render the molecule
+                    viewer.setStyle({}, { stick: {} });
+                    viewer.zoomTo();
+                    viewer.render();
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
+</html>
