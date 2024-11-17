@@ -8,4 +8,4 @@ SDF to MOL2: Transform SDF files into MOL2 format for visualization or further a
 MOL2 to PDBQT: Generate PDBQT files directly from MOL2 input.
 PDB to PDBQT: Generate PDBQT files directly from PDB input.
 
-[Structify](images/1.png)
+[!Structify](images/1.png)
