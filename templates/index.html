@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Structify: Chemical Structure Converter</title>
     <style>
-        /* Global styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -19,22 +18,14 @@
             text-align: center;
             padding: 20px 0;
         }
-        h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-
-        /* Main container styles */
         main {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            gap: 40px; /* Adds spacing between sections */
+            gap: 40px;
         }
-
-        /* Form container */
-        section#file-converter {
+        section {
             width: 100%;
             max-width: 800px;
             padding: 20px;
@@ -42,26 +33,17 @@
             border-radius: 8px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-
         form {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="file"],
-        select,
-        button {
+        input[type="file"], select, button, input[type="text"], input[type="number"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         button {
             background-color: #03a683;
             color: white;
@@ -69,102 +51,212 @@
             cursor: pointer;
             font-size: 1rem;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
-        /* Viewer container */
-        section#structure-viewer {
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
+        .help-text {
+            font-size: 0.9rem;
+            color: #666;
         }
-
+        #structure-viewer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
         #viewer {
-            width: 100%;
-            height: 400px;
-            margin: 0 auto; /* Center the viewer */
+            width: 100%; /* Take full width of parent */
+            max-width: 750px; /* Prevent over-expansion */
+            height: 400px; /* Fixed height */
             border: 1px solid #ccc;
             border-radius: 8px;
-            background-color: #f4f4f9;
-            position: relative; /* Ensures no overflow */
-            overflow: hidden; /* Ensures rendering stays inside */
+            background-color: #e0e0e0; /* Debugging background to visualize viewer bounds */
+            overflow: hidden;
+            position: relative; /* Keeps content inside */
         }
     </style>
     <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
 </head>
 <body>
-    <!-- Header -->
     <header>
         <h1>Structify: Chemical Structure Converter for Molecular Docking</h1>
     </header>
 
-    <!-- Main container -->
     <main>
-        <!-- File Converter Form -->
         <section id="file-converter">
             <form action="/" method="post" enctype="multipart/form-data" id="upload-form">
-                <label for="file">Upload File:</label>
-                <input type="file" name="file" id="file" required>
+                <label for="file">Upload File (Optional for SMILES input):</label>
+                <input type="file" name="file" id="file">
+                <p class="help-text">Supported formats: SDF (2D or 3D), MOL2, PDB, PDBQT.</p>
+
+                <label for="smiles_input">Or Enter SMILES String:</label>
+                <input type="text" name="smiles_input" id="smiles_input" placeholder="e.g., CC(=O)O">
+                <p class="help-text">Convert SMILES directly to 3D SDF, MOL2, or PDBQT.</p>
+
                 <label for="conversion_type">Conversion Type:</label>
                 <select name="conversion_type" id="conversion_type">
-                    <option value="sdf_to_mol2">SDF to MOL2</option>
-                    <option value="sdf_to_pdbqt">SDF to PDBQT</option>
+                    <option value="smiles_to_sdf">SMILES to 3D SDF</option>
+                    <option value="smiles_to_mol2">SMILES to MOL2</option>
+                    <option value="smiles_to_pdbqt">SMILES to PDBQT</option>
+                    <option value="sdf_to_mol2">SDF (2D) to MOL2</option>
+                    <option value="sdf_to_mol2">SDF (3D) to MOL2</option>
+                    <option value="sdf_to_pdbqt">SDF (3D) to PDBQT</option>
                     <option value="mol2_to_pdbqt">MOL2 to PDBQT</option>
                     <option value="pdb_to_pdbqt">PDB to PDBQT</option>
                 </select>
+
+                <label>
+    <input type="checkbox" name="apply_partial_charges"> Apply Partial Charges
+</label>
+<br>
+<label>
+    <input type="checkbox" name="add_hydrogens"> Add Hydrogens
+</label>
+<br>
+<label for="protonation_ph">Protonation pH (Optional):</label>
+<input type="number" step="0.1" min="0" max="12" id="protonation_ph" name="protonation_ph">
+                <p class="help-text">Set pH value for protonation during conversion.</p>
+
+                <label>
+                    <input type="checkbox" name="apply_minimization" value="true"> Apply Energy Minimization
+                </label>
+                <p class="help-text">Energy minimization refines 3D structures for docking.</p>
+
                 <button type="submit">Convert</button>
             </form>
         </section>
 
-        <!-- Chemical Structure Viewer -->
         <section id="structure-viewer">
-            <h2>Chemical Structure Viewer</h2>
-            <div id="viewer"></div>
+            <h2>Input Structure Viewer</h2>
+            <div id="viewer" style="width: 800px; height: 800px; border: 1px solid #ccc; border-radius: 8px; background-color: #f4f4f9;"></div>
+
         </section>
+        <!-- Footer -->
+    <div class="footer">
+        &copy; 2024 Structify: Chemical Structure Converter for Molecular Docking by Pritam Kumar Panda, Stanford University. All rights reserved.
+    </div>
     </main>
 
     <script>
-        const fileInput = document.getElementById('file');
-        const viewerContainer = document.getElementById('viewer');
+    const fileInput = document.getElementById('file');
+    const smilesInput = document.getElementById('smiles_input');
+    const viewerContainer = document.getElementById('viewer');
 
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const data = e.target.result;
-                    const viewer = $3Dmol.createViewer(viewerContainer, { backgroundColor: '#f4f4f9' });
+    // Information elements
+    const formulaElement = document.getElementById('formula');
+    const weightElement = document.getElementById('weight');
+    const atomCountElement = document.getElementById('atom-count');
+    const bondCountElement = document.getElementById('bond-count');
+    const bondDistanceElement = document.getElementById('bond-distance');
+    const torsionAngleElement = document.getElementById('torsion-angle');
 
-                    // Clear previous content
-                    viewer.clear();
+    // Function to render chemical structures
+    const renderStructure = (container, data, format) => {
+    try {
+        console.log("Rendering data with format:", format);
+        console.log("Input data:", data);
 
-                    // Render based on file extension
-                    if (fileExtension === 'sdf') {
-                        viewer.addModel(data, 'sdf');
-                    } else if (fileExtension === 'mol2') {
-                        viewer.addModel(data, 'mol2');
-                    } else if (fileExtension === 'pdb') {
-                        viewer.addModel(data, 'pdb');
-                    } else {
-                        alert('Unsupported file format for visualization. Only SDF and MOL2 are supported.');
-                        return;
+        const viewer = $3Dmol.createViewer(container, { backgroundColor: '#f4f4f9' });
+        viewer.clear();
+
+        // Add the model to the viewer
+        const model = viewer.addModel(data, format);
+
+        // Apply visualization style
+        viewer.setStyle({}, { stick: { radius: 0.2 }, sphere: { scale: 0.3 } });
+
+        // Add labels for all atoms
+                const atoms = viewer.selectedAtoms({});
+                atoms.forEach((atom) => {
+                    viewer.addLabel(atom.elem, {
+                        position: atom,
+                        fontSize: 10,
+                        fontColor: "black",
+                        backgroundColor: "white",
+                        //showBackground: false,
+                        backgroundOpacity: 0.7,
+                    });
+                });
+
+        // Render the structure
+        viewer.zoomTo();
+        viewer.render();
+        viewer.resize();
+    } catch (error) {
+        console.error("Error rendering structure:", error);
+        alert("Unable to render the structure. Please check the input format.");
+    }
+};
+
+    // Handle file input change event
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = e.target.result;
+                const supportedFormats = { sdf: 'sdf', mol2: 'mol2', pdb: 'pdb', pdbqt: 'pdbqt' };
+                if (fileExtension in supportedFormats) {
+                    renderStructure(viewerContainer, data, supportedFormats[fileExtension]);
+                } else {
+                    alert("Unsupported file format for visualization.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Handle SMILES input change event
+    smilesInput.addEventListener('input', () => {
+        const smiles = smilesInput.value.trim();
+        if (smiles) {
+            console.log("Fetching structure for SMILES:", smiles);
+            // Convert SMILES to SDF format using Cactus API
+            fetch(`https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(smiles)}/sdf`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch structure for SMILES.");
                     }
+                    return response.text();
+                })
+                .then((sdfData) => {
+                    if (!sdfData || sdfData.trim() === "") {
+                        throw new Error("Received empty structure data.");
+                    }
+                    renderStructure(viewerContainer, sdfData, 'sdf');
+                })
+                .catch((error) => {
+                    console.error(error);
+                    alert("Unable to render SMILES structure. Please ensure it is valid.");
+                });
+        }
+    });
 
-                    // Configure and render the molecule
-                    viewer.setStyle({}, { stick: {} });
-                    viewer.zoomTo();
-                    viewer.render();
-                };
-                reader.readAsText(file);
-            }
-        });
-    </script>
-</body>
-</html>
+    // Reset file and SMILES inputs on form submission
+    const form = document.getElementById('upload-form');
+    form.addEventListener('submit', () => {
+        setTimeout(() => {
+            fileInput.value = '';
+            smilesInput.value = '';
+        }, 500);
+    });
+
+    // Reset form on page load
+    window.addEventListener('load', () => {
+        form.reset();
+    });
+
+    // Clear file and SMILES input on form submission
+    form.addEventListener('submit', () => {
+        setTimeout(() => {
+            fileInput.value = '';
+            smilesInput.value = '';
+        }, 500);
+    });
+
+    // Reset form on page load
+    window.addEventListener('load', () => {
+        form.reset();
+    });
+</script>
