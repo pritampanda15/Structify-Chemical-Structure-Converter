@@ -1,8 +1,8 @@
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, redirect, url_for, abort
 import os
 import subprocess
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 UPLOAD_FOLDER = "uploads"
 CONVERTED_FOLDER = "converted"
 
@@ -33,8 +33,6 @@ def is_2d_sdf(file_path):
     return True  # Assume 2D if unable to determine
 
 @app.route('/', methods=['GET', 'POST'])
-def home():
-    return render_template('index.html')  # Ensure 'index.html' is in the 'templates' folder
 def index():
     if request.method == 'POST':
         smiles_input = request.form.get('smiles_input', None)
@@ -43,7 +41,16 @@ def index():
         add_hydrogens = request.form.get('add_hydrogens', False)
         apply_partial_charges = request.form.get('apply_partial_charges', False)  # New option
         protonation_ph = request.form.get('protonation_ph', None)
+        
 
+        # Ensure conversion_type is valid
+        valid_conversion_types = [
+            'smiles_to_sdf', 'smiles_to_mol2', 'smiles_to_pdbqt',
+            'sdf_to_mol2', 'sdf_to_pdbqt', 'mol2_to_pdbqt', 'pdb_to_pdbqt'
+        ]
+        if conversion_type not in valid_conversion_types:
+            return "Invalid conversion type.", 400
+        
         if smiles_input:
             # Write SMILES string to a temporary file
             input_path = os.path.join(UPLOAD_FOLDER, "input.smi")
@@ -60,7 +67,7 @@ def index():
 
         # Extract base name (without extension)
         base_name, _ = os.path.splitext(os.path.basename(input_path))
-
+        output_path = os.path.join(CONVERTED_FOLDER, f"{base_name}_converted")
         # Conversion paths and commands
         if conversion_type == 'smiles_to_sdf':
             output_path = os.path.join(CONVERTED_FOLDER, f"{base_name}_3D.sdf")
@@ -164,7 +171,38 @@ def index():
         # Return the file for download
         return send_file(renamed_output_path, as_attachment=True)
 
+        # Return the file for download
+        try:
+            return send_file(
+                renamed_output_path,
+                as_attachment=True,
+                mimetype='application/octet-stream',
+                download_name=os.path.basename(renamed_output_path)
+            )
+        except Exception as e:
+            return f"Failed to send the file: {e}", 500
+        
+        return redirect(url_for('download_file', filename=os.path.basename(renamed_output_path)))
     return render_template('index.html')
 
+@app.route('/download/<filename>', methods=['GET'])
+def download_file(filename):
+    """
+    Additional endpoint to serve files from the CONVERTED_FOLDER.
+    """
+    file_path = os.path.join(CONVERTED_FOLDER, filename)
+    if os.path.exists(file_path):
+        try:
+            return send_file(
+                file_path,
+                as_attachment=True,
+                mimetype='application/octet-stream',
+                download_name=filename
+            )
+        except Exception as e:
+            abort(500, description=f"Failed to download file: {e}")
+    else:
+        abort(404, description="File not found.")
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
