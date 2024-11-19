@@ -25,6 +25,8 @@ https://structify-chemical-converter-f735c2cc4ea3.herokuapp.com
 
 - **File Upload Support**:
   - Handles various molecular file uploads for conversion.
+  - Remember one thing : For converting 2D SMILES to PDBQT will not work directly. 
+    First you have to convert to MOL2 and then that MOL2 file can be converted to PDBQT. In that way it can preserve the structural coordinates. 
 
 ## Requirements
 
