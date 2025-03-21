@@ -2,7 +2,7 @@
 Structify is a lightweight and efficient tool for converting chemical structure file formats. Structify simplifies the process of converting between formats commonly used in computational chemistry and molecular docking workflows. This repository contains a **Flask-based web application** that enables users to convert molecular file formats and manipulate molecular structures. The app supports multiple file formats, performs operations like 2D-to-3D conversion, and allows the addition of hydrogens, partial charges, and energy minimization.
 
 # Access the app here:
-[https://structify-chemical-converter-f735c2cc4ea3.herokuapp.com](https://structify-chemical-structure-converter-j9nxiucrkboccb2yggbwcq.streamlit.app/)
+https://structify-chemical-structure-converter-j9nxiucrkboccb2yggbwcq.streamlit.app/
 
 
 ## Features
